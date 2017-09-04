@@ -1,0 +1,31 @@
+{
+  "name": "tb-push",
+  "version": "1.0.1",
+  "description": "Toroback Push Module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toroback/tb-push.git"
+  },
+  "keywords": [
+    "toroback",
+    "backend",
+    "push"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/toroback/tb-push/issues"
+  },
+  "homepage": "https://github.com/toroback/tb-push#readme",
+  "dependencies": {
+    "mongoose": "^4.9.5",
+    "apn": "^2.1.5",
+    "aws-sdk": "^2.100.0",
+    "express": "^4.15.4",
+    "request": "^2.81.0"
+  }
+}

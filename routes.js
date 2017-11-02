@@ -40,7 +40,7 @@ function setupRoutes(App){
    * @bodyparam   {String}  [data.sound]             (Sólo IOS) El sonido a utilizar
    * @bodyparam   {String}  [data.category]          (Sólo IOS) La categoría de la notificación
    * @bodyparam   {Number}  [data.contentAvailable]  (Sólo IOS) Valor 1 para indicar que hay nuevo contenido disponible
-   * @bodyparam   {String}  [data.certId]            Id del certificado a usar ("development"|"production")
+   * @bodyparam   {String}  certId            Id del certificado a usar ("development"|"production")
    * 
    * @example
    * 

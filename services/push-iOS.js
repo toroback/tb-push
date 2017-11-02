@@ -22,7 +22,6 @@ class iOSPush{
 
       this.topic = config.bundleId;
 
-      log.debug(this.options);
 
       if(this.options.pfx){
         this.apnConnection = new apn.Provider(this.options);
@@ -47,22 +46,22 @@ class iOSPush{
       note.alert = data.alert;
       note.payload = data.payload;
       note.category = data.category;
-      // log.trace(`category: &{data.category}`)
-      // note.topic = "net.a2system.momentual";
+
       if(this.topic)
         note.topic = this.topic;
 
       if(data.threadId)
-        note["thread-id"] = data.threadId;
+        note.threadId = data.threadId;
 
-      if(data.contentAvailabel != undefined)
-        note.contentAvailabel = data.contentAvailabel;
+      if(data.contentAvailable != undefined)
+        note.contentAvailable = data.contentAvailable;
       
       if(connection){
         let deviceTokens = [];
         deviceTokens.push(to);
         connection.send(note, deviceTokens)
           .then(response => {
+            log.debug(response);
             response.sent.forEach(token => {
               //notificationSent(user, token);
               resolve(handlerResultSend(token,true,null,note));
@@ -73,13 +72,13 @@ class iOSPush{
                 //notificationError(user, failure.device, failure.error);
                 log.error(deviceTokens);
                 log.error(failure);
-                reject(new Error("network error"));
+                reject(failure.error);
               } else {
                 // `failure.status` is the HTTP status code
                 // `failure.response` is the JSON payload
                 //notificationFailed(user, failure.device, failure.status, failure.response);
                 log.error(failure);
-                reject(new Error(`Error Status: ${failure.status}, ${failure.response.reason}`));
+                resolve(handlerResultSend(failure.device, false, failure.status, failure.response));
               }
             });      
           })
@@ -98,24 +97,18 @@ function handlerResultSend(to, send, err, resp){
     ret = {id:to,resp:resp};
   }else{
     switch(err){
-      case 2:
-      case 5:
-      case 7:
-      case 8:
-        ret = {id:to,error:{action:"no_retry"},resp:{error:err}}; 
-      break;
-      case 513:
-        ret = {id:to,error:{action:"no_retry"},resp:{error:{status:err,msg:"certificate error"}}}; 
+
+      case 410:
+        ret = {id:to,error:{action:"del"},resp:{error:{status:err,msg:resp.reason}}}; 
       break;
       default:
 
-        ret = {id:to,error:{action:"retry"},resp:{error:err.toString()}};
+        ret = {id:to,error:{action:"no_retry"},resp:{error:{status:err,msg:resp.reason}}};
       break;
     }
   }
   return ret;
 }
-
 
 
 module.exports = iOSPush;

@@ -13,7 +13,6 @@ class GCM {
 
   sendPush(to, payload) {
     log.debug("sendPushRetry GMC");
-    log.debug(this.options);
     return new Promise((resolve,reject) => {
       send(to,payload,this.options)
         .then(res => {

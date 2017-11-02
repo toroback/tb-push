@@ -51,7 +51,6 @@ module.exports = {
   initializeServices : function (service, serviceOpt){
     var service = service || _defaultService;
     // log.debug("servicio %s", service);
-    log.debug("serviceOpt: "+JSON.stringify(serviceOpt));
     // var pushService = null;
     var opt = _push[service].options;
     
@@ -63,8 +62,6 @@ module.exports = {
       
       opt = select || opt;
     }
-    log.trace("opt seleccionado: ");
-    log.debug(opt);
     _pushServices[service] = new _push[service].srv(App, opt);
   },
 
@@ -78,7 +75,6 @@ module.exports = {
   */
   sendPush:function(service, payload){
     var serviceOpt = payload.certId ? {certId:payload.certId} : {};
-    log.debug(serviceOpt);
     if(!_pushServices[service] || payload.certId) this.initializeServices(service,serviceOpt);
     return new Promise((resolve, reject) => {
       var Push = App.db.model('tb.push');

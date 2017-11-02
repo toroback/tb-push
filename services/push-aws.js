@@ -28,7 +28,7 @@ class AWSPush{
 
     log.debug("ENTRA EN AWS");
     this.options = options;
-    log.debug(options);
+    
     this.sns = new AWS.SNS({
       apiVersion: '2010-03-31',
       accessKeyId: options.accessKeyId,
@@ -38,8 +38,6 @@ class AWSPush{
   }
 
   sendPush(to, payload) {
-    log.debug("sendPushRetry AWS");
-    log.debug(this.options);
     return new Promise((resolve,reject) => { 
       send(this.sns, to, payload, this.options)
         .then(res => {
@@ -164,7 +162,6 @@ function createPayloadObject(data){
 
 function handlerResultSend(to, resp, err){
   var ret = null;
-  log.trace("handlerResultSend");
   if (err){
      ret = {id:to,error:{action:"no_retry"},resp:{err:err}};
   }else{

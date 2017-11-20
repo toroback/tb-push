@@ -22,10 +22,12 @@
   },
   "homepage": "https://github.com/toroback/tb-push#readme",
   "dependencies": {
-    "mongoose": "^4.9.5",
     "apn": "^2.1.5",
     "aws-sdk": "^2.100.0",
     "express": "^4.15.4",
+    "ink-docstrap": "^1.3.0",
+    "jsdoc-route-plugin": "^0.1.0",
+    "mongoose": "^4.9.5",
     "request": "^2.81.0"
   }
 }

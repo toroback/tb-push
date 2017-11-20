@@ -1,14 +1,13 @@
 
-/**
- * @module Routes - Push
- */
-
 var express = require('express');
 var router  = express.Router();
 var push    = require('./index.js');
 
 let log;
 
+/**
+ * @module tb-push/routes
+ */
 function setupRoutes(App){
 
   log = App.log.child({module:'pushRoute'});
@@ -20,7 +19,7 @@ function setupRoutes(App){
     next();
   });
 
-    /** 
+  /** 
    * Envia una notificacion push por el servicio indicado
    *
    * @name  Send Push
@@ -32,15 +31,20 @@ function setupRoutes(App){
    * @bodyparam   {String}  to                       Token al que se va a enviar el push
    * @bodyparam   {Object}  data                     Objeto con la toda información del push
    * @bodyparam   {Object}  data.alert               Objeto con la información principal del push, como título y mensaje
+   *                                                 NOTA: Si la notificación será enviada a un dispositivo Amazon completar data según la documentación de amazon: 
+   *                                                 {@link https://developer.amazon.com/public/apis/engage/device-messaging/tech-docs/adm-sending-message}.   
    * @bodyparam   {String}  data.alert.title         Título del push
    * @bodyparam   {String}  data.alert.body          Mensaje del push
    * @bodyparam   {String}  [data.icon]              Icono de la notificación
    * @bodyparam   {Object}  [data.payload]           Objeto con información adicional 
+   * @bodyparam   {String}  [data.threadId]          ThreadId de la notificación
    * @bodyparam   {String}  [data.badge]             (Sólo IOS) Contador que mostrar en el icono de la aplicacion 
    * @bodyparam   {String}  [data.sound]             (Sólo IOS) El sonido a utilizar
    * @bodyparam   {String}  [data.category]          (Sólo IOS) La categoría de la notificación
    * @bodyparam   {Number}  [data.contentAvailable]  (Sólo IOS) Valor 1 para indicar que hay nuevo contenido disponible
-   * @bodyparam   {String}  certId            Id del certificado a usar ("development"|"production")
+   * @bodyparam   {Number}  [data.service]           (Sólo Amazon) Subservicio soportado por amazon al que enviar la notificacion. Por defecto se utiliza 'adm'
+   *                                                 (ios: iOS(Producción), ios_dev: iOS(Desarrollo), gcm: GoogleCloudMessage, adm: Amazon Device Messaging)
+   * @bodyparam   {String}  [certId]                 Id del certificado a usar ("development"|"production")
    * 
    * @example
    * 

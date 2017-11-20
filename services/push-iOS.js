@@ -3,8 +3,22 @@ var apn = require('apn');
 let App;
 let log;
 
-
+/**
+ * Servicio de envío de notificaciones Push de Apple
+ * @private
+ * @memberOf module:tb-push
+ */
 class iOSPush{
+
+   /**
+   * Crea una instancia del servicio de Apple
+   * @param  {Object} _app                  Objeto App de la aplicación
+   * @param  {Object} config                Objeto con las credenciales para el servicio
+   * @param  {String} config.cert           Path, relativo a la carpeta "cert", del certificado de push de Apple 
+   * @param  {String} config.passphrase     Contraseña para el certificado 
+   * @param  {String} config.production     Indica si el certificado es de producción o no
+   * @param  {String} config.bundleId       BundleId del proyecto de iOS
+   */
   constructor(_app, config){
     App = _app;
     log = App.log.child({module:'iOSPush'});
@@ -30,6 +44,21 @@ class iOSPush{
     }
   }
 
+  /**
+   * Envia una notificación push
+   * @param  {String}  to                       Device token al que enviar la notificación
+   * @param  {Object}  data                     Objeto con la toda información del push
+   * @param  {Object}  data.alert               Objeto con la información principal del push, como título y mensaje
+   * @param  {String}  data.alert.title         Título del push
+   * @param  {String}  data.alert.body          Mensaje del push
+   * @param  {Object}  [data.payload]           Objeto con información adicional 
+   * @param  {String}  [data.badge]             Contador que mostrar en el icono de la aplicacion 
+   * @param  {String}  [data.sound]             El sonido a utilizar
+   * @param  {String}  [data.category]          La categoría de la notificación
+   * @param  {String}  [data.threadId]          ThreadId de la notificación
+   * @param  {Number}  [data.contentAvailable]  Valor 1 para indicar que hay nuevo contenido disponible
+   * @return {Promise<Object>}    Promesa con el resultado del envío
+   */
   sendPush(to, data) {
     return new Promise((resolve, reject) => {
 
@@ -91,19 +120,28 @@ class iOSPush{
 
 }
 
-function handlerResultSend(to, send, err, resp){
+/**
+ * Maneja el resultado del envío del push
+ * @private
+ * @param  {String} to       Device Token del push
+ * @param  {Boolean} sent    Indica si el push se envió o no
+ * @param  {Number} errCode  Status del envío
+ * @param  {Object} resp     Objeto con el resultado del envío
+ * @return {Object}      Objeto con información tras procesar el resultado del envío
+ */
+function handlerResultSend(to, sent, errCode, resp){
   var ret = null;
-  if(send){
+  if(sent){
     ret = {id:to,resp:resp};
   }else{
-    switch(err){
+    switch(errCode){
 
       case 410:
-        ret = {id:to,error:{action:"del"},resp:{error:{status:err,msg:resp.reason}}}; 
+        ret = {id:to,error:{action:"del"},resp:{error:{status:errCode,msg:resp.reason}}}; 
       break;
       default:
 
-        ret = {id:to,error:{action:"no_retry"},resp:{error:{status:err,msg:resp.reason}}};
+        ret = {id:to,error:{action:"no_retry"},resp:{error:{status:errCode,msg:resp.reason}}};
       break;
     }
   }

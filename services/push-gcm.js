@@ -3,7 +3,20 @@ var request = require('request');
 let App;
 let log;
 
-class GCM {
+/**
+ * Servicio de envío de Pushes de Google
+ * @private
+ * @memberOf module:tb-push
+ */
+class GCMPush{
+
+  /**
+   * Crea una instancia del servicio de GoogleCloudMessage
+   * @param  {Object} _app              Objeto App de la aplicación
+   * @param  {Object} options           Objeto con las credenciales para el servici
+   * @param  {String} options.apikey    Clave de Api de GCM
+   * @param  {String} options.url       Url de envio de notificaciones de GCM
+   */
   constructor(_app, options){
     App = _app;
     log = App.log.child({module:'GCMPush'});
@@ -11,6 +24,20 @@ class GCM {
     this.options = options;
   }
 
+  /**
+   * Envia notificación push a través del servicio seleccionado
+   * @param {string} service                          Servicio a través del cual se enviará la notificación push (google|ios)
+   * @param {Object} payload                          Objecto con información sobre el envio de la notificación
+   * @param {string} payload.to                       Push_token al cual se envia la notificación.
+   * @param {Object} payload.data                     Objecto que contiene el payload que se quiere enviar.   
+   * @param {Object} payload.data.alert               Objeto con la información principal del push, como título y mensaje
+   * @param {String} payload.data.alert.title         Título del push
+   * @param {String} payload.data.alert.body          Mensaje del push
+   * @param {String} [payload.data.icon]              Icono de la notificación
+   * @param {Object} [payload.data.payload]           Objeto con información adicional 
+   * @param {String} [payload.data.threadId]          ThreadId de la notificación
+   * @return {Promise<Object>} Una promesa con el objeto push 
+  */
   sendPush(to, payload) {
     log.debug("sendPushRetry GMC");
     return new Promise((resolve,reject) => {
@@ -142,4 +169,4 @@ function sendDelayed(to, data, options, delay){
 }
 
 
-module.exports = GCM;
+module.exports = GCMPush;

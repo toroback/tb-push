@@ -1,6 +1,6 @@
 # tb-push Reference
 
-Este modulo permite enviar notificiones push a traves de los servicios disponibles, que son:
+Este módulo permite enviar notificaciones push a través de los servicios disponibles, que son:
 - Google
 - IOS
 - Amazon Web Services
@@ -21,13 +21,13 @@ Además, para que el módulo esté correctamente integrado en el servidor incluy
 
 ### **- Configuración del servicio Google:**
 
-#### **• Configuración desde A2Server:** 
+#### **• Configuración desde interfaz administrativa:** 
 
 Desde la interfaz web de administración seleccionar la aplicación que se va a configurar.
 
 Una vez en ella acceder a la sección **"Configuración"** y luego a la pestaña **"Push"**.
 
-En dicha pestaña, en la sección **"GCM Push Credenciales"**, es necesario introducir la Clave Google API y la url del servidor de envio de Push de google (que normalmente es "https://android.googleapis.com/gcm/send" ó "https://fcm.googleapis.com/fcm/send" si es a través de Firebase).
+En dicha pestaña, en la sección **"GCM Push Credenciales"**, es necesario introducir la Clave Google API y la url del servidor de envío de Push de google (que normalmente es "https://android.googleapis.com/gcm/send" ó "https://fcm.googleapis.com/fcm/send" si es a través de Firebase).
 
 Una vez introducidos los valores pulsamos el botón **"Guardar"** para guardar los cambios.
 
@@ -37,7 +37,7 @@ Una vez introducidos los valores pulsamos el botón **"Guardar"** para guardar l
 
 La configuración manual se realiza en el archivo "config.json".
 
-Para ello hay que añadir el objeto "pushOptions", si no se tenía enteriormente, y agregar un objeto JSON cuya clave sea "gcm" que contendrá la clave de Google Api y la url del servidor de envio de Push de google. Al completarlo, debería quedar de la siguiente manera:
+Para ello hay que añadir el objeto "pushOptions", si no se tenía anteriormente, y agregar un objeto JSON cuya clave sea "gcm" que contendrá la clave de Google Api y la url del servidor de envío de Push de google. Al completarlo, debería quedar de la siguiente manera:
 
 ```javascript
 "pushOptions":{
@@ -50,21 +50,25 @@ Para ello hay que añadir el objeto "pushOptions", si no se tenía enteriormente
 
 ### **- Configuración del servicio IOS:**
 
-#### **• Configuración desde A2Server:** 
+#### **• Configuración desde interfaz administrativa:** 
 
 Desde la interfaz web de administración seleccionar la aplicación que se va a configurar.
 
-Una vez en ella acceder a la sección "Configuración" y luego a la pestaña "Push".
+Una vez en ella acceder a la sección **"Configuración"** y luego a la pestaña **"Push"**.
 
-En dicha pestaña, en la sección "iOS Push Credenciales" hay posibilidad de añadir dos certificados, uno para desarrollo y otro para producción, pero el proceso para agregar uno u otro es el mismo.
+En dicha pestaña, en la sección **"iOS Push Credenciales"** hay posibilidad de configurar dos certificados, uno para desarrollo y otro para producción, pero el proceso para agregar uno u otro es el mismo.
 
-Para configurar un certificado hay que añadir el archivo del certificado correspondiente en formato p12 e introducir la contraseña asociada al certificado.
+Para configurar un certificado hay que añadir el archivo del certificado correspondiente en formato p12, introducir la contraseña asociada al certificado y el Bundle Id de la aplicación que recibirá las notificaciones.
+
+Una vez introducidos los valores pulsamos el botón **"Guardar"** para guardar los cambios.
+
+De los certificados disponibles solo uno puede estar en uso. Para ello podemos seleccionar el que queramos utilizar en cada momento pulsando el botón **"Usar este certificado"**
 
 #### **• Configuración manual:**
 
 La configuración manual se realiza en el archivo "config.json".
 
-Para ello hay que añadir el objeto "pushOptions", si no se tenía enteriormente, y agregar un array cuya clave sea **"ios"** que contendrá la información de los distintos certificados de ios.
+Para ello hay que añadir el objeto "pushOptions", si no se tenía anteriormente, y agregar un array cuya clave sea **"ios"** que contendrá la información de los distintos certificados de ios.
 
 Cada uno de los certificados estará formado por un objeto con los siguientes campos:
 
@@ -77,7 +81,7 @@ Cada uno de los certificados estará formado por un objeto con los siguientes ca
 |certId|Boolean||Identificador del certificado (production\|develop) |
 |bundleId|Boolean||Bundle id del proyecto iOS|
 
-Para el envio de notifiaciones a iOS (APN), el archivo de configuración (config.json) quedaría de la siguente manera:
+Para el envío de notificaciones a iOS (APN), el archivo de configuración (config.json) quedaría de la siguiente manera:
 
 ```javascript
 "pushOptions":{
@@ -161,7 +165,7 @@ Para configurar los servicios que se utilizarán es necesario introducir el "App
 
 La configuración manual se realiza en el archivo "config.json".
 
-Para ello hay que añadir el objeto "pushOptions", si no se tenía enteriormente, y agregar un array cuya clave sea **"aws"** que contendrá las credenciales obtenidas de AWS y la información de los servicios que se utilizarán. 
+Para ello hay que añadir el objeto "pushOptions", si no se tenía anteriormente, y agregar un array cuya clave sea **"aws"** que contendrá las credenciales obtenidas de AWS y la información de los servicios que se utilizarán. 
 
 **- Configuración de credenciales**:
 
@@ -184,19 +188,20 @@ Cada servicio que se vaya a utilizar necesitará un objeto con el siguiente form
 ```
 
 Las clave para el objeto de cada servicio (service_key) son las siguientes:
-- Google Cloud Message : "gcm"
-- Apple Push Notification Service (Desarrollo) : "ios_dev"
-- Apple Push Notification Service (Producción) : "ios"
-- Amazon Device Messaging : "adm"
-- Baidu Cloud Push : "baidu"
-- Microsoft Push Notification Service : "mpns"
-- Windows Push Notification Services : "wns"
+- **Google Cloud Message** : "gcm"
+- **Apple Push Notification Service (Desarrollo)** : "ios_dev"
+- **Apple Push Notification Service (Producción)** : "ios"
+- **Amazon Device Messaging** : "adm"
+- **Baidu Cloud Push** : "baidu"
+- **Microsoft Push Notification Service** : "mpns"
+- **Windows Push Notification Services** : "wns"
 
 **NOTA:** Si no se dispone del ARN, en la sección "Generar ARN de aplicación" se explicará detalladamente.
 
 ### **- Ejemplo**
 
 + Configuración del servicio de Google Cloud Message y de Apple Push Notification Service (Desarrollo y Producción):
+
 ```javascript
 "pushOptions": {
   ...
@@ -228,9 +233,9 @@ Nota: Se puede crear una cuenta [aquí](https://aws.amazon.com/)
 Si ya dispone de una cuenta inicie sesión y acceda a la Consola haciendo click en:
   "Mi Cuenta" -> "Consola de administración de AWS"
 
-Una vez en la consola despliegue el menu "Servicios" y seleccione "Messaging -> Simple Notification Service" para acceder a la configuración de servicios de envio de Notificaciones.
+Una vez en la consola despliegue el menu "Servicios" y seleccione "Messaging -> Simple Notification Service" para acceder a la configuración de servicios de envío de Notificaciones.
 
-A continuación seleccione "Create platform application" para desplegar un formulario que le permitirá crear una nueva plataforma de envio de notificaciones.
+A continuación seleccione "Create platform application" para desplegar un formulario que le permitirá crear una nueva plataforma de envío de notificaciones.
 
 En el formulario, introduzca el nombre de la aplicación y selecciones la plataforma que desea crear. Luego introduzca las credenciales necesarias para el servicio seleccionado y pulse "Create platform application" para finalizar.
 
@@ -240,7 +245,7 @@ NOTA: No todas las regiones de AWS soportan el envío de notificaciones push. Si
 
 Para enviar notificaciones push se puede realizar de dos maneras:
   - Mediante peticiones http (Servidor o cliente).
-  - Mediante llamadas internas al modelo (Servidor).
+  - Mediante la Class Api (Servidor).
 
 
 ### **- REST Api**
@@ -327,9 +332,9 @@ DATOS:
   }
 ```
 
-### **- Llamadas internas**
+### **- Class Api**
 
-Para realizar las llamadas internas se utiliza el objeto App.push 
+Para realizar las llamadas al Class Api se utiliza el objeto App.push 
 
 #### **• Ejemplo:** 
 
@@ -337,22 +342,22 @@ Para realizar las llamadas internas se utiliza el objeto App.push
  var arg = {to:"my_push_token",data:{alert:{title:"title push",body:"My body"}}};
  //para enviar push a google
  App.push.sendPush("google", arg).then(function(resp){
-  console.log("envio realizado");
+  console.log("envío realizado");
  }).catch(function(err){
-  console.log("error en el envio");
+  console.log("error en el envío");
  });
  
  //para enviar push a ios
  App.push.sendPush("ios", arg).then(function(resp){
-  console.log("envio realizado");
+  console.log("envío realizado");
  }).catch(function(err){
-  console.log("error en el envio");
+  console.log("error en el envío");
  })
 
 ```
 
 
-## Gestion de errores
+## Gestión de errores
 
 En el envío de notificaciones puede producir distintos errores. Algunos por falta de algún campo requerido, otras veces por problemas de conexión o incluso por problemas con la configuración y los certificados necesarios.
 

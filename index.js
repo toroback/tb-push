@@ -11,6 +11,8 @@ var _pushServices = {};
 let servicesLocation = "./services";
 let rscPath  = __dirname +'/resources';
 
+var _pushOptions = {};
+
 // function retryFunction(retry,myfunc,check){
 //   return new Promise((resolve, reject) => {
 //     var interval = setInterval(() => {
@@ -70,7 +72,7 @@ module.exports = {
       App.acl.checkActions(ctx, ctx.model, ctx.method)
         .then(() => {
           //Hace la llamada al método correspondiente
-          return this[ctx.method](service,ctx.payload); 
+          return this[ctx.method](ctx.client,ctx.payload); 
         })
         .then(resolve)
         .catch(reject);
@@ -85,11 +87,13 @@ module.exports = {
    * @param  {Object} [serviceOpt]      Opciones para configurar el servicio
    * @param  {Object} serviceOpt.certId Id del certificado que se va a utilizar. 
    */
-  initializeService : function (service, serviceOpt){
-    var service = service || _defaultService;
+  initializeService : function (client, serviceOpt){
+    var options = getOptionsForClient(client);
+    var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
+    var service = options.service || _defaultService;
     // log.debug("servicio %s", service);
     // var pushService = null;
-    var opt = _push[service].options;
+    var opt = _push[pushServiceId].options;
     
     if(service == "ios"){
       var select = opt.find(elem => (serviceOpt && serviceOpt.certId == elem._id) || elem.active );
@@ -99,12 +103,19 @@ module.exports = {
       
       opt = select || opt;
     }
-    _pushServices[service] = new _push[service].srv(App, opt);
+
+    console.log("push object", _push[pushServiceId]);
+    console.log("push object 2", _push[pushServiceId].srv);
+    _pushServices[pushServiceId] = new _push[pushServiceId].srv(App, opt);
   },
 
-  /**
+
+    /**
    * Envia notificación push a través del servicio seleccionado
-   * @param {string} service                          Servicio a través del cual se enviará la notificación push (google|ios)
+   * @param {Object} client                           Cliente al que enviar la notificacion
+   * @param {Object} client.platform                  Plataforma a la que enviar la notificacion ("android","ios")
+   * @param {Object} client.name                      Nombre del cliente al que enviar la notificación.
+   * 
    * @param {Object} payload                          Objecto con información sobre el envio de la notificación
    * @param {string} payload.to                       Push_token al cual se envia la notificación.
    * @param {Object} payload.data                     Objecto que contiene el payload que se quiere enviar.   
@@ -125,12 +136,16 @@ module.exports = {
    * @param {Object} [payload.certId]                 Id del certificado que se va a utilizar.    
    * @return {Promise<Object>} Una promesa con el objeto push 
   */
-  sendPush:function(service, payload){
+  sendPush:function(client, payload){
+    var options = getOptionsForClient(client);
+    var service = options.service;
+    var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
+
     var serviceOpt = payload.certId ? {certId:payload.certId} : {};
-    if(!_pushServices[service] || payload.certId) this.initializeService(service,serviceOpt);
+    if(!_pushServices[pushServiceId] || payload.certId) this.initializeService(client,serviceOpt);
     return new Promise((resolve, reject) => {
       var Push = App.db.model('tb.push');
-      _pushServices[service].sendPush(payload.to,payload.data)
+      _pushServices[pushServiceId].sendPush(payload.to,payload.data)
         .then(resp => {
           log.trace("RESPUESTA EN SENDPUSH:");
           log.debug(resp);
@@ -149,15 +164,18 @@ module.exports = {
         });
     });
   },
- 
+
   /**
    * Devuelve la información del servicio seleccionado
    * @param {string} service - servicio seleccionado  
    * @return {Object} Informacion del servicio
   */
-  getService:function(service){
-    if(!_pushServices[service]) this.initializeService(service);
-    return _pushServices[service];
+  getService:function(client){
+    var options = getOptionsForClient(client);
+    var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
+    if(!_pushServices[pushServiceId]) this.initializeService(client);
+    console.log("initialized")
+    return _pushServices[pushServiceId];
   },
 
   /**
@@ -171,31 +189,53 @@ module.exports = {
       App = _app;
       log = _app.log.child({module:'push'});
      
-      // App.db.setModel('tb.push',rscPath + '/tb.push-schema');
+      let Config = App.db.model('tb.configs');
+      Config.findById('pushOptions')
+        .then( pushOptions => { 
+          if(!pushOptions){
+            reject(new Error('pushOptions not configured'));
+          }else{
 
-      if(!App.pushOptions){
-        reject(new Error('pushOptions not configured'));
-      }else{
-        _push.google = {
-          srv: require(servicesLocation+'/push-gcm'),
-          options : App.pushOptions.gcm
-        };
+            _pushOptions = pushOptions;
+            // console.log("push options", _pushOptions);
+            // console.log("push options certificates", _pushOptions.certificates);
 
-        _push.ios = {
-          srv: require(servicesLocation+'/push-iOS'),
-          options : App.pushOptions.ios
-        };
+            console.log("push options 2", pushOptions);
+            console.log("push options certificates 2 ", pushOptions.toObject().certificates);
+            _pushOptions.toObject().certificates.forEach( function(pushOption, index) {
+               var srv;
+               switch (pushOption.service) {
+                 case 'ios':
+                   srv = require(servicesLocation+'/push-iOS');
+                   break;
+                 case 'aws':
+                   srv = require(servicesLocation+'/push-aws');
+                   break;  
+                 default:
+                   srv = require(servicesLocation+'/push-gcm');
+                   break;
+               }
 
-        _push.aws = {
-          srv: require(servicesLocation+'/push-aws'),
-          options : App.pushOptions.aws
-        };
 
-        log.info('Setup: Push');
-        // load routes
-        require("./routes")(_app);
-        resolve( );
-      }
+               _push[pushOption.client+"_"+pushOption.platform+"_"+pushOption.service] = {
+                  srv: srv,
+                  options: getOptionsForClient({name: pushOption.client, platform: pushOption.platform, service: pushOption.service}).data
+               };
+
+            });
+
+
+            // console.log("initialized pushes");
+            // console.log(_push);
+    
+
+            log.info('Setup: Push');
+            // load routes
+            require("./routes")(_app);
+            resolve( );
+          }
+       })
+      .catch(reject);
     });
   }, 
 
@@ -211,3 +251,14 @@ module.exports = {
   }
 
 }
+
+
+function getOptionsForClient(client){
+  var certificates = _pushOptions.toObject().certificates;
+  if(certificates){
+    return certificates.find( e => (e.client == client.name && e.platform == client.platform ));
+  }else{
+    return undefined;
+  }
+}
+

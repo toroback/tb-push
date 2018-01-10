@@ -65,6 +65,10 @@ function setupRoutes(App){
     var ctx = req._ctx;
     ctx.method = 'sendPush';
     ctx.model = "push";
+    ctx.client={
+      name: req.query.client,
+      platform: req.query.platform
+    }
     ctx.payload = {
       certId:req.body.certId,
       to:req.body.to,

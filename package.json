@@ -1,6 +1,6 @@
 {
   "name": "tb-push",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Toroback Push Module",
   "main": "index.js",
   "scripts": {

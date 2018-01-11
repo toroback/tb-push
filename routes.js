@@ -27,6 +27,8 @@ function setupRoutes(App){
    * @route {POST} srv/push/send
    *
    * @queryparam {String} [service] Servicio por el que enviar el push. (Ej. "service=google")
+   * @queryparam {String} client Nombre de la aplicacion cliente por el que enviar el push. (Ej. "client=myapp")
+   * @queryparam {String} platform Plataforma de la aplicacion cliente por el que enviar el push. ("ios", "android") (Ej. "platform=ios")
    *
    * @bodyparam   {String}  to                       Token al que se va a enviar el push
    * @bodyparam   {Object}  data                     Objeto con la toda información del push
@@ -67,7 +69,8 @@ function setupRoutes(App){
     ctx.model = "push";
     ctx.client={
       name: req.query.client,
-      platform: req.query.platform
+      platform: req.query.platform,
+      service: req.query.service
     }
     ctx.payload = {
       certId:req.body.certId,

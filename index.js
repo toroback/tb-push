@@ -64,6 +64,7 @@ module.exports = {
   /**
    * Metodo que permite llamar a cualquier otro metodo del modulo comprobando con aterioridad si el usuario tiene permisos para acceder a este.
    * @param {ctx} CTX Contexto donde se indicará el resource y el method a ejecutar
+   * @param {Object} CTX.client Aplicación cliente sobre la que se realizará la acción
    * @return {Promise<Object>} Promesa con el resultado del metodo llamado
   */
   do: function(ctx){
@@ -91,21 +92,22 @@ module.exports = {
     var options = getOptionsForClient(client);
     var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
     var service = options.service || _defaultService;
-    // log.debug("servicio %s", service);
-    // var pushService = null;
+
     var opt = _push[pushServiceId].options;
     
     if(service == "ios"){
-      var select = opt.find(elem => (serviceOpt && serviceOpt.certId == elem._id) || elem.active );
+      var isProduction = !App.develop ;//!(App.develop || serviceOpt.certId == 'develop');
+      var select = !isProduction ? opt.develop : opt.prod;
+      select.bundleId = opt.bundleId;
+      select.production = isProduction;
+      // var select = opt.find(elem => (serviceOpt && serviceOpt.certId == elem._id) || elem.active );
       
-      if(!select)
-        select = opt.find(elem => !elem.production);
+      // if(!select)
+      //   select = opt.find(elem => !elem.production);
       
       opt = select || opt;
     }
 
-    console.log("push object", _push[pushServiceId]);
-    console.log("push object 2", _push[pushServiceId].srv);
     _pushServices[pushServiceId] = new _push[pushServiceId].srv(App, opt);
   },
 
@@ -137,15 +139,22 @@ module.exports = {
    * @return {Promise<Object>} Una promesa con el objeto push 
   */
   sendPush:function(client, payload){
+
+  //     var options = getOptionsForClient(client);
+  // var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
+  // if(!_pushServices[pushServiceId]) this.initializeService(client, extraOpt);
+  // return _pushServices[pushServiceId];
+
     var options = getOptionsForClient(client);
     var service = options.service;
-    var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
+    // var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
 
     var serviceOpt = payload.certId ? {certId:payload.certId} : {};
-    if(!_pushServices[pushServiceId] || payload.certId) this.initializeService(client,serviceOpt);
+    var pushService = this.getService(client, serviceOpt);
+    // if(!_pushServices[pushServiceId] || payload.certId) this.initializeService(client,serviceOpt);
     return new Promise((resolve, reject) => {
       var Push = App.db.model('tb.push');
-      _pushServices[pushServiceId].sendPush(payload.to,payload.data)
+      pushService.sendPush(payload.to,payload.data)
         .then(resp => {
           log.trace("RESPUESTA EN SENDPUSH:");
           log.debug(resp);
@@ -166,15 +175,18 @@ module.exports = {
   },
 
   /**
-   * Devuelve la información del servicio seleccionado
-   * @param {string} service - servicio seleccionado  
-   * @return {Object} Informacion del servicio
-  */
-  getService:function(client){
+   * Devuelve el objeto servicio que se encargará de enviar la notificación para el cliente indicado
+   * @param  {Object} client Objeto con la descripción del cliente
+   * @param  {String} client.name Nombre de la aplicación cliente definido en la configuración
+   * @param  {String} client.platform Plataforma de la aplicación cliente ("android", "ios")
+   * @param  {Object} extraOpt Objeto con información adicional para la configuración del servicio
+   * @return {[type]}        [description]
+   */
+  getService:function(client, extraOpt){
+    // return getPushService(client, serviceOpt);
     var options = getOptionsForClient(client);
     var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
-    if(!_pushServices[pushServiceId]) this.initializeService(client);
-    console.log("initialized")
+    if(!_pushServices[pushServiceId] || extraOpt.certId) this.initializeService(client, extraOpt);
     return _pushServices[pushServiceId];
   },
 
@@ -195,13 +207,8 @@ module.exports = {
           if(!pushOptions){
             reject(new Error('pushOptions not configured'));
           }else{
-
             _pushOptions = pushOptions;
-            // console.log("push options", _pushOptions);
-            // console.log("push options certificates", _pushOptions.certificates);
 
-            console.log("push options 2", pushOptions);
-            console.log("push options certificates 2 ", pushOptions.toObject().certificates);
             _pushOptions.toObject().certificates.forEach( function(pushOption, index) {
                var srv;
                switch (pushOption.service) {
@@ -216,18 +223,12 @@ module.exports = {
                    break;
                }
 
-
                _push[pushOption.client+"_"+pushOption.platform+"_"+pushOption.service] = {
                   srv: srv,
                   options: getOptionsForClient({name: pushOption.client, platform: pushOption.platform, service: pushOption.service}).data
                };
 
-            });
-
-
-            // console.log("initialized pushes");
-            // console.log(_push);
-    
+            });    
 
             log.info('Setup: Push');
             // load routes
@@ -252,7 +253,13 @@ module.exports = {
 
 }
 
-
+/**
+ * Devuelve las opciones para el cliente especificado
+ * @param  {Object} client Objeto con la descripción del cliente
+ * @param  {String} client.name Nombre de la aplicación cliente definido en la configuración
+ * @param  {String} client.platform Plataforma de la aplicación cliente ("android", "ios")
+ * @return {Object} Objeto con las opciones para el cliente
+ */
 function getOptionsForClient(client){
   var certificates = _pushOptions.toObject().certificates;
   if(certificates){
@@ -261,4 +268,3 @@ function getOptionsForClient(client){
     return undefined;
   }
 }
-

@@ -24,9 +24,8 @@ class iOSPush{
     log = App.log.child({module:'iOSPush'});
 
     log.trace("ENTRA EN iOSPush");
-    var bundleId = config.bundleId;
+
     if(config){
-      config = App.develop ? config.develop : config.prod;
       var cert = App.certsPath + config.cert;
       var passphrase = config.passphrase
       
@@ -35,7 +34,7 @@ class iOSPush{
       this.options.passphrase = passphrase || null;
       this.options.production = config.production != null? config.production: true;
 
-      this.topic = bundleId;
+      this.topic = config.bundleId;
 
 
       if(this.options.pfx){

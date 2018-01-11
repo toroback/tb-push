@@ -96,7 +96,7 @@ module.exports = {
     var opt = _push[pushServiceId].options;
     
     if(service == "ios"){
-      var isProduction = !App.develop ;//!(App.develop || serviceOpt.certId == 'develop');
+      var isProduction = (serviceOpt && serviceOpt.develop == true) ? false : true;//!(App.develop || serviceOpt.certId == 'develop');
       var select = !isProduction ? opt.develop : opt.prod;
       select.bundleId = opt.bundleId;
       select.production = isProduction;
@@ -148,8 +148,7 @@ module.exports = {
     var options = getOptionsForClient(client);
     var service = options.service;
     // var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
-
-    var serviceOpt = payload.certId ? {certId:payload.certId} : {};
+    var serviceOpt = {develop: payload.develop ? true: false}//payload.certId ? {certId:payload.certId} : {};
     var pushService = this.getService(client, serviceOpt);
     // if(!_pushServices[pushServiceId] || payload.certId) this.initializeService(client,serviceOpt);
     return new Promise((resolve, reject) => {
@@ -183,10 +182,9 @@ module.exports = {
    * @return {[type]}        [description]
    */
   getService:function(client, extraOpt){
-    // return getPushService(client, serviceOpt);
     var options = getOptionsForClient(client);
     var pushServiceId = options.client+"_"+options.platform+"_"+options.service;
-    if(!_pushServices[pushServiceId] || extraOpt.certId) this.initializeService(client, extraOpt);
+    if(!_pushServices[pushServiceId] || extraOpt.develop != undefined) this.initializeService(client, extraOpt);
     return _pushServices[pushServiceId];
   },
 

@@ -14,7 +14,7 @@ class GCMPush{
    * Crea una instancia del servicio de GoogleCloudMessage
    * @param  {Object} _app              Objeto App de la aplicación
    * @param  {Object} options           Objeto con las credenciales para el servici
-   * @param  {String} options.apikey    Clave de Api de GCM
+   * @param  {String} options.serverKey    Clave de Api de GCM
    * @param  {String} options.url       Url de envio de notificaciones de GCM
    */
   constructor(_app, options){
@@ -138,7 +138,7 @@ function send(to, data, options){
       
     log.debug(payload);
     var headers = {
-      'Authorization':'key='+options.apikey,
+      'Authorization':'key='+options.serverKey,
       'Content-Type':'application/json;charset=UTF-8'
     };
     log.debug(headers);

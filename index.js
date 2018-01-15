@@ -216,9 +216,11 @@ module.exports = {
                  case 'aws':
                    srv = require(servicesLocation+'/push-aws');
                    break;  
-                 default:
+                 case 'google':
                    srv = require(servicesLocation+'/push-gcm');
                    break;
+                default:
+                  break; 
                }
 
                _push[pushOption.client+"_"+pushOption.platform+"_"+pushOption.service] = {

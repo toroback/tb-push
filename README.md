@@ -42,7 +42,7 @@ Para ello hay que añadir el objeto "pushOptions", si no se tenía anteriormente
 ```javascript
 "pushOptions":{
     "gcm":{
-      "apikey": <api-key de la app en google>, 
+      "serverKey": <api-key de la app en google>, 
       "url": <url a través de la que se enviará la notificación (Ej. https://android.googleapis.com/gcm/send)>
     }
 }
@@ -66,67 +66,52 @@ De los certificados disponibles solo uno puede estar en uso. Para ello podemos s
 
 #### **• Configuración manual:**
 
-La configuración manual se realiza en el archivo "config.json".
+La configuración manual se realiza sobre una colección en la base de datos llamada "tb.configs".
 
-Para ello hay que añadir el objeto "pushOptions", si no se tenía anteriormente, y agregar un array cuya clave sea **"ios"** que contendrá la información de los distintos certificados de ios.
-
-Cada uno de los certificados estará formado por un objeto con los siguientes campos:
+Para ello hay que añadir un nuevo documento cuyo id sea el "pushOptions" (Ej. "\_id":"pushOptions") y que contenga un array cuya clave sea "certificates" si no se tenía anteriormente. Una vez se disponga de dicho documento, dentro del array "certificates" es necesario agregar un objeto con la configuración necesaria para los certificados de una app y servicio en concreto que contendrá la información necesaria.  
+Los certificados de ios estarán representado por un objeto con los siguientes campos:
 
 | Clave | Tipo | Opcional   | Descripción |
 |---|---|:---:|---|
-|production|Boolean||Flag que indica es es de producción o no (true\|false)|
-|cert|String||Path del certificado dentro de la carpeta "cert"|
-|passphrase|Boolean||Contraseña del certificado|
-|active|Boolean||Flag que indica si es el certificado activo|
-|certId|Boolean||Identificador del certificado (production\|develop) |
-|bundleId|Boolean||Bundle id del proyecto iOS|
+|client|String||String que será utilizado para identificar al cliente al que corresponde el certificado (Ej. MyAwasomeApp)|
+|platform|String||Plataforma del certificado (ios, android). En este caso "ios"|
+|service|String||Servicio que utilizará el certificado (ios, google, adm). En este caso "ios"|
+|data|Object||Objeto con información de los certificados usados por la app cliente asociado al documento|
+|data.bundleId|String||BundleId de la aplicación|
+|data.prod|Object||Objeto con las credenciales necesarias para la app compilada para producción|
+|data.prod.cert|String||Path del certificado dentro de la carpeta "cert"|
+|data.prod.passphrase|String||Contraseña del certificado|
+|data.develop|Object||Objeto con las credenciales necesarias para la app compilada para desarrollo|
+|data.develop.cert|String||Path del certificado dentro de la carpeta "cert"|
+|data.develop.passphrase|String||Contraseña del certificado|
+
+Los certificados de iOS deberán alojarse en la carpeta **"cert"** creada al mismo nivel que **"app"**.
 
 Para el envío de notificaciones a iOS (APN), el archivo de configuración (config.json) quedaría de la siguiente manera:
 
-```javascript
-"pushOptions":{
-  "ios":[
-    {
-     "cert":<"path donde se encuentra el cert">,
-     "passphrase":<"contraseña del cert">,
-     "production":<true|false>,
-     "active":<true|false>, 
-     "certId":<production|development>,
-     "bundleId":<"bundle_id"> 
-    },
-    {
-     "cert":"...",
-     "passphrase":"...",
-     "production":"...",
-      ...
-    }
-  ]
-}
 ```
-    
-Los certificados de iOS deberán alojarse en la carpeta **"cert"** creada al mismo nivel que **"app"**, por lo que si dentro de la carpeta "cert" creamos la carpeta "ios" y es aquí donde alojamos nuestros certificados, cuyos nombres sean "cert.p12" y "cert_dev.p12" para producción y desarrollo respectivamente, con password "123456" para ambos y estando activo el de producción, la configuración seria la siguiente :
+  {
+      "_id" : "pushOptions",
+      "certificates" : [ 
+        {
+            "client" : "myAppClientName",
+            "platform" : "ios",
+            "service" : "ios",
+            "data" : {
+                "bundleId" : "com.example.myApp",
+                "prod" : {
+                    "cert" : "path/to/cert/prodCert.p12",
+                    "passphrase" : "p4ssw0rd"
+                },
+                "develop" : {
+                    "cert" : "path/to/cert/devCert.p12",
+                    "passphrase" : "p4ssw0rd"
+                }
+            }
+        }
+      ]
+  } 
 
-```javascript
-"pushOptions":{
-    "ios":[
-      {
-        "production": false,
-        "cert": "ios/cert_dev.p12",
-        "passphrase": "123456",
-        "active": false,
-        "_id": "development",
-        "bundleId": "com.example.test"
-      },
-      {
-        "production": true,
-        "cert": "ios/cert.p12",
-        "passphrase": "123456",
-        "active": true,
-        "_id": "production",
-        "bundleId": "com.example.test"
-      }
-    ]
-}
 ```
 
 ### **- Configuración del servicio Amazon Web Services:**

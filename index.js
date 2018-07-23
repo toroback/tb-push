@@ -179,7 +179,7 @@ module.exports = {
    * @param  {String} client.name Nombre de la aplicación cliente definido en la configuración
    * @param  {String} client.platform Plataforma de la aplicación cliente ("android", "ios")
    * @param  {Object} extraOpt Objeto con información adicional para la configuración del servicio
-   * @return {[type]}        [description]
+   * @return {Object} Service
    */
   getService:function(client, extraOpt){
     var options = getOptionsForClient(client);
